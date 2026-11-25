@@ -1,131 +1,124 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "framer-motion";
-import {
-  drawFrameToCanvas,
-  getNearestLoadedFrame,
-  PreloaderState,
-} from "@/hooks/useImagePreloader";
+import { useRef } from "react";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 
-interface HeroScrollProps {
-  preloader: PreloaderState;
-  frameCount?: number;
-}
-
-export default function HeroScroll({
-  preloader,
-  frameCount = 120,
-}: HeroScrollProps) {
+export default function HeroScroll() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const lastIndexRef = useRef<number>(-1);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  // Smooth spring-scrubbed progress for buttery frame transitions
+  // Silky GPU-driven spring choreography
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 180,
-    damping: 32,
+    stiffness: 150,
+    damping: 28,
     mass: 0.35,
   });
 
+  // 4K Cabin Window zooms straight through the exact oval center (47.25%, 44.7%)
+  const windowScale = useTransform(smoothProgress, [0, 0.72], [1, 5.4]);
+  const windowOpacity = useTransform(smoothProgress, [0.54, 0.74], [1, 0]);
+
+  // Background 4K cloud sea settles gently as you emerge out of the cabin
+  const cloudsScale = useTransform(smoothProgress, [0, 0.85], [1.14, 1.0]);
+  const cloudsY = useTransform(smoothProgress, [0, 1], ["0%", "6%"]);
+  const skyTintOpacity = useTransform(smoothProgress, [0, 0.5], [0.22, 0]);
+
   // Typographic choreography tied to scroll progress
-  const initialOverlayOpacity = useTransform(smoothProgress, [0, 0.22], [1, 0]);
+  const initialOverlayOpacity = useTransform(smoothProgress, [0, 0.24], [1, 0]);
   const initialOverlayBlur = useTransform(
     smoothProgress,
-    [0, 0.22],
+    [0, 0.24],
     ["blur(0px)", "blur(10px)"]
   );
-  const wordmarkY = useTransform(smoothProgress, [0, 0.26], [0, -160]);
-  const wordmarkScale = useTransform(smoothProgress, [0, 0.26], [1, 0.48]);
-  const wordmarkOpacity = useTransform(smoothProgress, [0, 0.18, 0.25], [1, 0.85, 0]);
 
-  const leftTitleX = useTransform(smoothProgress, [0, 0.24], [0, -60]);
-  const rightTitleX = useTransform(smoothProgress, [0, 0.24], [0, 60]);
+  // Center wordmark inside window glides upward to dock into Header
+  const wordmarkY = useTransform(smoothProgress, [0, 0.28], [0, -170]);
+  const wordmarkScale = useTransform(smoothProgress, [0, 0.28], [1, 0.48]);
+  const wordmarkOpacity = useTransform(
+    smoothProgress,
+    [0, 0.18, 0.26],
+    [1, 0.85, 0]
+  );
 
-  // Mid-cloud emergence subtle caption
+  const leftTitleX = useTransform(smoothProgress, [0, 0.26], [0, -64]);
+  const rightTitleX = useTransform(smoothProgress, [0, 0.26], [0, 64]);
+
+  // Cloud-sea emergence caption once clear of the window
   const cloudCaptionOpacity = useTransform(
     smoothProgress,
-    [0.66, 0.78, 0.93, 1],
+    [0.64, 0.78, 0.94, 1],
     [0, 1, 1, 0]
   );
-  const cloudCaptionY = useTransform(smoothProgress, [0.66, 0.82], [28, 0]);
-
-  // Render initial frame once loaded & keep synced on resize / scroll
-  useEffect(() => {
-    const renderAtProgress = (progress: number) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const frameIndex = Math.min(
-        frameCount - 1,
-        Math.max(0, Math.round(progress * (frameCount - 1)))
-      );
-      const img = getNearestLoadedFrame(preloader.imagesRef.current, frameIndex);
-      if (img) {
-        drawFrameToCanvas(canvas, img, "cover", "#141010");
-        lastIndexRef.current = frameIndex;
-      }
-    };
-
-    renderAtProgress(smoothProgress.get());
-
-    const unsubscribe = smoothProgress.on("change", (latest) => {
-      renderAtProgress(latest);
-    });
-
-    const handleResize = () => {
-      renderAtProgress(smoothProgress.get());
-    };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [smoothProgress, preloader.imagesRef, preloader.isFirstFrameReady, preloader.loadedCount, frameCount]);
+  const cloudCaptionY = useTransform(smoothProgress, [0.64, 0.82], [28, 0]);
 
   return (
     <section
       id="hero"
       ref={containerRef}
-      className="relative h-[400vh] w-full bg-[#050505]"
+      className="relative h-[340vh] w-full bg-[#050505]"
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Scrollytelling Canvas */}
-        <canvas
-          ref={canvasRef}
-          className="h-full w-full block contrast-[1.03] saturate-[1.04]"
-          aria-label="TonkJet cabin window transition into clouds"
-        />
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#1D6FA8]">
+        {/* LAYER 1: 4K Sunlit Cloud Sea with Living Ambient Drift */}
+        <motion.div
+          style={{ scale: cloudsScale, y: cloudsY }}
+          className="absolute inset-0 will-change-transform"
+        >
+          <img
+            src="/layers/hero-clouds-4k.webp"
+            alt="Sunlit 4K cloud sea at flight level 450"
+            className="h-full w-full object-cover animate-cloud-drift contrast-[1.03] saturate-[1.06]"
+          />
+          {/* Subtle upper cobalt depth tint like Jesko Jets sky */}
+          <motion.div
+            style={{ opacity: skyTintOpacity }}
+            className="pointer-events-none absolute inset-0"
+          >
+            <div
+              className="h-full w-full"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(1,90,169,0.55) 0%, rgba(1,90,169,0.08) 55%, rgba(255,248,237,0) 100%)",
+              }}
+            />
+          </motion.div>
+        </motion.div>
 
-        {/* Ultra-subtle organic cinema grain */}
-        <div className="pointer-events-none absolute inset-0 cinema-grain z-[1]" />
+        {/* LAYER 2: 4K Transparent-Glass Cabin Window Frame (Zoom-Through) */}
+        <motion.div
+          style={{
+            scale: windowScale,
+            opacity: windowOpacity,
+            transformOrigin: "47.25% 44.7%",
+          }}
+          className="pointer-events-none absolute inset-0 z-[5] will-change-transform"
+        >
+          <img
+            src="/layers/hero-window-4k.webp"
+            alt="TonkJet luxury cabin oval window"
+            className="h-full w-full object-cover"
+          />
+        </motion.div>
 
-        {/* Subtle atmospheric vignette that softens as we break into open sky */}
+        {/* Subtle atmospheric vignette that softens as window opens into sky */}
         <motion.div
           style={{ opacity: initialOverlayOpacity }}
-          className="pointer-events-none absolute inset-0 hero-vignette"
+          className="pointer-events-none absolute inset-0 z-[6] hero-vignette"
         />
 
         {/* Seamless bottom mist feather into About section sky */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 z-[7]"
           style={{
             background:
-              "linear-gradient(180deg, rgba(155,200,220,0) 0%, rgba(155,200,220,0.22) 100%)",
+              "linear-gradient(180deg, rgba(155,200,220,0) 0%, rgba(155,200,220,0.3) 100%)",
           }}
         />
 
-        {/* Centered Brand Wordmark inside cabin window (docks into header on scroll) */}
+        {/* Centered Brand Wordmark inside oval cabin window */}
         <motion.div
           style={{
             y: wordmarkY,
@@ -134,7 +127,7 @@ export default function HeroScroll({
           }}
           className="pointer-events-none absolute inset-0 flex items-center justify-center z-20"
         >
-          <span className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[0.22em] uppercase text-[#FFF8ED] drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)]">
+          <span className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[0.22em] uppercase text-[#FFF8ED] drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)] -translate-x-[2.5%] -translate-y-[4%]">
             TonkJet
           </span>
         </motion.div>
@@ -166,7 +159,7 @@ export default function HeroScroll({
                 enjoy life
               </p>
               <div className="my-3.5 h-[1px] w-16 bg-[#FFF8ED]/45" />
-              <p className="text-[12.5px] leading-relaxed text-[#FFF8ED]/80 drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]">
+              <p className="text-[12.5px] leading-relaxed text-[#FFF8ED]/85 drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]">
                 Every flight is designed around your comfort, time, and
                 ambitions — so you can focus on what truly matters, while we
                 take care of everything else.

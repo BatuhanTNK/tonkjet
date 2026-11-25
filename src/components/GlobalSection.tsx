@@ -1,8 +1,18 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Plane } from "lucide-react";
+
+const WebGLGlobe = dynamic(() => import("./WebGLGlobe"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center">
+      <div className="h-64 w-64 rounded-full border border-[#FFF8ED]/10 animate-pulse" />
+    </div>
+  ),
+});
 
 const CITIES = [
   "Istanbul",
@@ -105,19 +115,15 @@ export default function GlobalSection({ onOpenBooking }: GlobalSectionProps) {
             </span>
           </div>
 
-          {/* Looping 3D Globe HTML5 Video */}
+          {/* Live 4K Retina WebGL 3D Globe */}
           <motion.div
             style={{ scale: globeScale }}
-            className="relative z-[1] w-full max-w-[960px] aspect-video flex items-center justify-center"
+            className="relative z-[1] w-full max-w-[760px] aspect-square flex flex-col items-center justify-center"
           >
-            <video
-              src="/globe-loop.mp4?v=1080p"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="h-full w-full object-cover globe-video-mask mix-blend-lighten opacity-95"
-            />
+            <WebGLGlobe />
+            <span className="pointer-events-none -mt-6 font-mono text-[10px] tracking-[0.28em] uppercase text-[#FFF8ED]/40">
+              DRAG TO ROTATE · LIVE 3D FLIGHT NETWORK
+            </span>
           </motion.div>
 
           {/* Parallax Warm-Ivory Boarding Pass Card ("5K+ flights") */}

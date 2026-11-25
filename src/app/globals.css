@@ -155,6 +155,22 @@ body {
   animation: cityRoll 24s linear infinite;
 }
 
+@keyframes cloudDrift {
+  0% {
+    transform: translate3d(0%, 0%, 0) scale(1.12);
+  }
+  50% {
+    transform: translate3d(-4%, -1.5%, 0) scale(1.16);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0) scale(1.12);
+  }
+}
+
+.animate-cloud-drift {
+  animation: cloudDrift 34s ease-in-out infinite;
+}
+
 /* Soft edge radial mask for 3D globe video blending */
 .globe-video-mask {
   mask-image: radial-gradient(

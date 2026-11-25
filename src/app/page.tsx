@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useImagePreloader } from "@/hooks/useImagePreloader";
+import { useEffect, useState } from "react";
 import Preloader from "@/components/Preloader";
 import Header from "@/components/Header";
 import FloatingCTA from "@/components/FloatingCTA";
@@ -13,48 +12,59 @@ import TelemetryBar from "@/components/TelemetryBar";
 import GlobalSection from "@/components/GlobalSection";
 import BookingDrawer from "@/components/BookingDrawer";
 
+const CORE_4K_ASSETS = [
+  "/layers/hero-window-4k.webp",
+  "/layers/hero-clouds-4k.webp",
+  "/layers/plane-exterior-4k.webp",
+  "/layers/plane-interior-4k.webp",
+];
+
 export default function HomePage() {
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [isReady, setIsReady] = useState(false);
 
-  // Preload both scroll-scrubbed 1080p WebP sequences with priority keyframe caching
-  const heroPreloader = useImagePreloader({
-    basePath: "/sequence-1",
-    frameCount: 158,
-    filePrefix: "frame-",
-    extension: "webp",
-    priorityCount: 32,
-  });
+  useEffect(() => {
+    let loaded = 0;
+    let cancelled = false;
 
-  const planePreloader = useImagePreloader({
-    basePath: "/sequence-2",
-    frameCount: 158,
-    filePrefix: "frame-",
-    extension: "webp",
-    priorityCount: 28,
-  });
+    CORE_4K_ASSETS.forEach((src) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      const done = () => {
+        if (cancelled) return;
+        loaded += 1;
+        setLoadProgress(loaded / CORE_4K_ASSETS.length);
+        if (loaded >= CORE_4K_ASSETS.length) {
+          setIsReady(true);
+        }
+      };
+      img.onload = done;
+      img.onerror = done;
+    });
 
-  const combinedProgress =
-    heroPreloader.progress * 0.7 + planePreloader.progress * 0.3;
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className="relative min-h-screen w-full bg-[#050505]">
       {/* Cinematic Mask Preloader */}
-      <Preloader
-        progress={combinedProgress}
-        isReady={heroPreloader.isCriticalReady}
-      />
+      <Preloader progress={loadProgress} isReady={isReady} />
 
       {/* Dynamic Theme-Inverting Fixed Header */}
       <Header />
 
-      {/* Section 1: Hero Window-to-Clouds Canvas Scrollytelling */}
-      <HeroScroll preloader={heroPreloader} frameCount={158} />
+      {/* Section 1: 4K Layered Cabin Window Zoom-Through + Drifting Clouds */}
+      <HeroScroll />
 
       {/* Section 2: Sky-to-Ivory Manifesto & 4 Pillars */}
       <AboutSection />
 
-      {/* Section 3: Gulfstream 650ER Exterior -> Interior Floorplan Morph */}
-      <PlaneMorph preloader={planePreloader} frameCount={158} />
+      {/* Section 3: 4K Dual-Layer Gulfstream 650ER Exterior -> Interior CSS Mask Morph */}
+      <PlaneMorph />
 
       {/* Section 4: "A Better Way to Fly" Interactive Accordion & Editorial Photography */}
       <AdvantagesSection />
@@ -62,7 +72,7 @@ export default function HomePage() {
       {/* Section 5: Live Telemetry Strip */}
       <TelemetryBar />
 
-      {/* Section 6: Global Rolling City Wheel, 3D Globe Video, Parallax Boarding Pass & Footer */}
+      {/* Section 6: Global Rolling City Wheel, Live 4K WebGL 3D Globe, Parallax Boarding Pass & Footer */}
       <GlobalSection onOpenBooking={() => setBookingOpen(true)} />
 
       {/* Persistent Floating Bottom-Center CTA Pill */}

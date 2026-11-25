@@ -1,22 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import {
   motion,
+  useMotionTemplate,
   useScroll,
   useSpring,
   useTransform,
 } from "framer-motion";
-import {
-  drawFrameToCanvas,
-  getNearestLoadedFrame,
-  PreloaderState,
-} from "@/hooks/useImagePreloader";
-
-interface PlaneMorphProps {
-  preloader: PreloaderState;
-  frameCount?: number;
-}
 
 const SPECS = [
   { label: "MAXIMUM OPERATING RANGE", value: "11,263 km" },
@@ -33,12 +24,8 @@ const CABIN_DIMS = [
   { label: "CABIN HEIGHT", value: "1.91 m" },
 ];
 
-export default function PlaneMorph({
-  preloader,
-  frameCount = 120,
-}: PlaneMorphProps) {
+export default function PlaneMorph() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -46,92 +33,105 @@ export default function PlaneMorph({
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 170,
-    damping: 30,
+    stiffness: 150,
+    damping: 28,
     mass: 0.35,
   });
 
-  // Phase 1: Exterior ("Fly in" / "Luxury") fades out before roof opens
-  const phase1Opacity = useTransform(smoothProgress, [0, 0.3, 0.44], [1, 1, 0]);
+  // Subtle majestic scale breathing during the morph
+  const jetScale = useTransform(smoothProgress, [0, 1], [1.0, 1.055]);
+
+  // Feathered top-to-bottom CSS mask sweep peeling away the 4K exterior roof to reveal the 4K interior
+  const maskLead = useTransform(smoothProgress, [0.22, 0.72], [-18, 108]);
+  const maskTrail = useTransform(smoothProgress, [0.22, 0.72], [0, 126]);
+  const exteriorMask = useMotionTemplate`linear-gradient(180deg, rgba(0,0,0,0) ${maskLead}%, rgba(0,0,0,1) ${maskTrail}%)`;
+
+  // Delicate luminous scan hairline gliding down the fuselage frontier during the morph
+  const scanTop = useTransform(smoothProgress, [0.22, 0.72], ["4%", "96%"]);
+  const scanOpacity = useTransform(
+    smoothProgress,
+    [0.2, 0.3, 0.66, 0.75],
+    [0, 0.65, 0.65, 0]
+  );
+
+  // Phase 1: Exterior ("Fly in" / "Luxury") fades out before roof peels open
+  const phase1Opacity = useTransform(smoothProgress, [0, 0.24, 0.38], [1, 1, 0]);
   const phase1Blur = useTransform(
     smoothProgress,
-    [0.28, 0.44],
+    [0.24, 0.38],
     ["blur(0px)", "blur(10px)"]
   );
-  const phase1Y = useTransform(smoothProgress, [0.28, 0.46], [0, -28]);
+  const phase1Y = useTransform(smoothProgress, [0.24, 0.4], [0, -28]);
 
-  // Phase 2: Interior cabin floorplan & technical specs emerge as morph completes
+  // Phase 2: Interior cabin architecture & specs emerge cleanly
   const phase2Opacity = useTransform(
     smoothProgress,
-    [0.48, 0.64, 0.96, 1],
-    [0, 1, 1, 0.9]
+    [0.48, 0.65, 0.96, 1],
+    [0, 1, 1, 0.92]
   );
   const phase2Blur = useTransform(
     smoothProgress,
-    [0.48, 0.64],
+    [0.48, 0.65],
     ["blur(12px)", "blur(0px)"]
   );
   const phase2Y = useTransform(smoothProgress, [0.48, 0.66], [30, 0]);
-
-  useEffect(() => {
-    const renderAtProgress = (progress: number) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const frameIndex = Math.min(
-        frameCount - 1,
-        Math.max(0, Math.round(progress * (frameCount - 1)))
-      );
-      const img = getNearestLoadedFrame(preloader.imagesRef.current, frameIndex);
-      if (img) {
-        drawFrameToCanvas(canvas, img, "cover");
-      }
-    };
-
-    renderAtProgress(smoothProgress.get());
-
-    const unsubscribe = smoothProgress.on("change", (latest) => {
-      renderAtProgress(latest);
-    });
-
-    const handleResize = () => renderAtProgress(smoothProgress.get());
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [smoothProgress, preloader.imagesRef, preloader.isFirstFrameReady, preloader.loadedCount, frameCount]);
 
   return (
     <section
       id="flight"
       ref={containerRef}
-      className="relative h-[420vh] w-full light-bg text-[#141010]"
+      className="relative h-[360vh] w-full light-bg text-[#141010]"
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Background gradient safety layer matching exact sequence-2 studio tones */}
+        {/* Background gradient safety layer matching exact studio tones */}
         <div className="absolute inset-0 light-bg" />
 
-        {/* Scrubbed Jet -> Interior Blueprint Canvas */}
-        <canvas
-          ref={canvasRef}
-          className="relative z-[1] h-full w-full block contrast-[1.03]"
-          aria-label="TonkJet Gulfstream 650ER exterior to interior cabin morph"
-        />
+        {/* DUAL 4K LAYERED MORPH STAGE */}
+        <motion.div
+          style={{ scale: jetScale }}
+          className="relative z-[1] h-full w-full will-change-transform"
+        >
+          {/* Bottom Layer: 4K Open Interior Cabin Plan */}
+          <img
+            src="/layers/plane-interior-4k.webp"
+            alt="TonkJet Gulfstream 650ER 4K interior cabin layout"
+            className="absolute inset-0 h-full w-full object-cover contrast-[1.03]"
+          />
 
-        {/* Ultra-subtle organic cinema grain */}
-        <div className="pointer-events-none absolute inset-0 cinema-grain z-[2]" />
+          {/* Top Layer: 4K Exterior Fuselage peeled away by feathered CSS mask */}
+          <motion.div
+            style={{
+              WebkitMaskImage: exteriorMask,
+              maskImage: exteriorMask,
+            }}
+            className="absolute inset-0 will-change-[mask-image]"
+          >
+            <img
+              src="/layers/plane-exterior-4k.webp"
+              alt="TonkJet Gulfstream 650ER 4K exterior top-down view"
+              className="h-full w-full object-cover contrast-[1.03]"
+            />
+          </motion.div>
+
+          {/* Subtle Blueprint Scan Line at the Mask Frontier */}
+          <motion.div
+            style={{ top: scanTop, opacity: scanOpacity }}
+            className="pointer-events-none absolute inset-x-0 z-[3] flex justify-center"
+          >
+            <div className="h-[1.5px] w-[42%] max-w-[540px] bg-gradient-to-r from-transparent via-[#FFF8ED] to-transparent shadow-[0_0_24px_rgba(255,248,237,0.9)]" />
+          </motion.div>
+        </motion.div>
 
         {/* Top & bottom soft color feathers for seamless transition with About & Advantages */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-24 z-[2]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-24 z-[4]"
           style={{
             background:
               "linear-gradient(180deg, rgba(139,133,125,0.65) 0%, rgba(139,133,125,0) 100%)",
           }}
         />
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 z-[2]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 z-[4]"
           style={{
             background:
               "linear-gradient(0deg, #FFF8ED 0%, rgba(255,248,237,0) 100%)",
@@ -147,13 +147,11 @@ export default function PlaneMorph({
           }}
           className="pointer-events-none absolute inset-0 z-10 mx-auto max-w-[1440px] px-6 md:px-14 lg:px-24 pt-24 pb-24 flex flex-col justify-between"
         >
-          {/* Eyebrow */}
           <div className="flex items-center justify-between text-[11px] font-mono tracking-[0.26em] uppercase text-[#141010]/65">
             <span>OUR FLAGSHIP FLEET</span>
             <span className="hidden sm:inline">GULFSTREAM · 650ER</span>
           </div>
 
-          {/* Center Flanking Display Titles */}
           <div className="flex items-center justify-between w-full">
             <h2 className="font-display text-4xl sm:text-6xl md:text-[78px] lg:text-[92px] font-medium tracking-[-0.03em] leading-none text-[#141010]">
               Fly in
@@ -163,7 +161,6 @@ export default function PlaneMorph({
             </h2>
           </div>
 
-          {/* Bottom Split Descriptions */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-xs">
               <p className="font-display text-xl md:text-2xl font-medium tracking-[-0.01em] text-[#141010]">
@@ -187,7 +184,7 @@ export default function PlaneMorph({
           </div>
         </motion.div>
 
-        {/* PHASE 2 OVERLAY: Interior Floorplan Specs & Architecture */}
+        {/* PHASE 2 OVERLAY: Interior Floorplan Specs & Vector CAD Annotations */}
         <motion.div
           style={{
             opacity: phase2Opacity,
@@ -201,7 +198,6 @@ export default function PlaneMorph({
             <span className="hidden sm:inline">4 LIVING ZONES · 12 SEATS</span>
           </div>
 
-          {/* Left Specs Grid & Right Cabin Summary flanking the open-cabin jet */}
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-6 my-auto">
             {/* Left Technical Specs */}
             <div className="lg:col-span-3 max-w-[320px] bg-[#FFF8ED]/70 backdrop-blur-md lg:bg-transparent lg:backdrop-blur-none p-5 lg:p-0 rounded-2xl lg:rounded-none border border-[#141010]/10 lg:border-0">
@@ -221,7 +217,6 @@ export default function PlaneMorph({
                 ))}
               </div>
 
-              {/* Cabin Dimensions Strip */}
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {CABIN_DIMS.map((dim) => (
                   <div key={dim.label}>
@@ -236,8 +231,41 @@ export default function PlaneMorph({
               </div>
             </div>
 
-            {/* Center Spacer keeping the jet fuselage & swept wings completely unobstructed */}
-            <div className="hidden lg:block lg:col-span-6" />
+            {/* Center Spacer with Subtle Razor-Sharp Vector CAD Dimension Bracket */}
+            <div className="hidden lg:flex lg:col-span-6 items-center justify-center">
+              <svg
+                viewBox="0 0 420 520"
+                className="h-[58vh] w-auto opacity-45"
+                fill="none"
+                aria-hidden="true"
+              >
+                {/* Vertical Cabin Length Measurement Line (14.27 m) */}
+                <line
+                  x1="312"
+                  y1="92"
+                  x2="312"
+                  y2="418"
+                  stroke="#141010"
+                  strokeWidth="0.75"
+                  strokeDasharray="3 4"
+                />
+                <line x1="304" y1="92" x2="320" y2="92" stroke="#141010" strokeWidth="0.9" />
+                <line x1="304" y1="418" x2="320" y2="418" stroke="#141010" strokeWidth="0.9" />
+                <circle cx="312" cy="170" r="2.2" fill="#141010" />
+                <circle cx="312" cy="265" r="2.2" fill="#141010" />
+                <circle cx="312" cy="360" r="2.2" fill="#141010" />
+                <text
+                  x="326"
+                  y="260"
+                  fill="#141010"
+                  fontSize="9"
+                  fontFamily="monospace"
+                  letterSpacing="2"
+                >
+                  14.27 M
+                </text>
+              </svg>
+            </div>
 
             {/* Right Cabin Highlight Column */}
             <div className="hidden lg:flex lg:col-span-3 flex-col items-end text-right">
