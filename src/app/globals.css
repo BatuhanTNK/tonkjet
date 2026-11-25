@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ivory: #fff8ed;
+  --espresso: #312726;
+  --espresso-deep: #141010;
+  --void: #050505;
+  --taupe: #7a716e;
+  --sky-cobalt: #015aa9;
+  --sky-powder: #8fc2d7;
+}
+
+html {
+  background-color: #050505;
+  color: #fff8ed;
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: #050505;
+  color: #fff8ed;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide scrollbars like Jesko Jets */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 16-stop eased dark espresso-to-black gradient (.dark-bg) */
+.dark-bg {
+  background: linear-gradient(
+    180deg,
+    #312726 0%,
+    #2d2423 6.67%,
+    #292120 13.33%,
+    #251e1d 20%,
+    #211a1a 26.67%,
+    #1d1716 33.33%,
+    #181313 40%,
+    #141010 46.67%,
+    #100d0c 53.33%,
+    #0c0a0a 60%,
+    #090707 66.67%,
+    #060505 73.33%,
+    #040404 80%,
+    #030303 86.67%,
+    #020101 93.33%,
+    #000000 100%
+  );
+}
+
+/* Warm taupe-to-ivory studio gradient matching sequence-2 */
+.light-bg {
+  background: linear-gradient(180deg, #8b857d 0%, #c8c1b6 48%, #faf4e8 100%);
+}
+
+/* Sky-to-ivory atmospheric gradient matching end of sequence-1 */
+.sky-about-bg {
+  background: linear-gradient(
+    180deg,
+    #9bc8dc 0%,
+    #b7d8e7 14%,
+    #e5eff3 32%,
+    #fff8ed 54%,
+    #fff8ed 80%,
+    #c6bfb5 92%,
+    #8b857d 100%
+  );
+}
+
+/* 5-layer diffused ambient shadow for floating CTA pill */
+.cta-ambient-shadow {
+  box-shadow:
+    0 198px 55px 0 rgba(0, 0, 0, 0),
+    0 127px 51px 0 rgba(0, 0, 0, 0.01),
+    0 71px 43px 0 rgba(0, 0, 0, 0.04),
+    0 32px 32px 0 rgba(0, 0, 0, 0.07),
+    0 8px 17px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Dual-layer vertical text roll hover */
+.text-roll {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  line-height: 1.15;
+}
+
+.text-roll-inner {
+  display: inline-block;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.text-roll-clone {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  display: inline-block;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .text-roll-inner,
+.text-roll:hover .text-roll-inner {
+  transform: translateY(-100%);
+}
+
+.group:hover .text-roll-clone,
+.text-roll:hover .text-roll-clone {
+  transform: translateY(-100%);
+}
+
+/* Masked rolling city wheel */
+.city-wheel-mask {
+  mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.35) 22%,
+    rgba(0, 0, 0, 1) 46%,
+    rgba(0, 0, 0, 1) 54%,
+    rgba(0, 0, 0, 0.35) 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.35) 22%,
+    rgba(0, 0, 0, 1) 46%,
+    rgba(0, 0, 0, 1) 54%,
+    rgba(0, 0, 0, 0.35) 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+@keyframes cityRoll {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-city-roll {
+  animation: cityRoll 24s linear infinite;
+}
+
+/* Soft edge radial mask for 3D globe video blending */
+.globe-video-mask {
+  mask-image: radial-gradient(
+    ellipse 62% 62% at 50% 50%,
+    rgba(0, 0, 0, 1) 48%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0) 98%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 62% 62% at 50% 50%,
+    rgba(0, 0, 0, 1) 48%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0) 98%
+  );
+}
+
+/* Subtle hero radial vignette */
+.hero-vignette {
+  background: radial-gradient(
+    55% 55% at 50% 50%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(10, 8, 8, 0.18) 76%,
+    rgba(10, 8, 8, 0.42) 100%
+  );
+}
+
+/* Ultra-subtle cinema micro-grain to eliminate digital banding & sharpen perceived detail */
+.cinema-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
