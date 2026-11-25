@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   title: "TonkJet — Private Jet Charter Worldwide",
   description:
     "TonkJet is a private aviation operator offering ultra-long-range global charter missions with quiet luxury, precision, and 24/7 flight readiness.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

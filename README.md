@@ -1,15 +1,26 @@
 # TonkJet — Private Jet Charter Worldwide
 
-A cinematic, scroll-driven luxury private aviation website built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, and **Lenis** smooth scroll.
+[**Canlı Siteyi Aç ↗ (https://tonkjet.netlify.app)**](https://tonkjet.netlify.app)
 
-## Features
+A cinematic, scroll-driven luxury private aviation experience built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, **Lenis**, and **Three.js (WebGL)**.
 
-- **Cinematic Preloader** with radial `clip-path` mask reveal and priority keyframe image preloading (`useImagePreloader`).
-- **Hero Cabin Window Scrollytelling** (`158` native `1920×1080` WebP frames scrubbed on HTML5 `<canvas>` with spring interpolation and header logo docking).
-- **Dynamic Theme-Inverting Navigation** switching seamlessly between light and dark palettes as sections scroll.
-- **Flagship G650ER Exterior → Interior Morph** (`158` native `1920×1080` WebP frames paired with technical specifications and cabin zone highlights).
-- **Interactive Advantages Accordion** with editorial photo crossfades and live telemetry bar.
-- **Global Reach Stage** featuring a masked rolling city wheel, looping `1080p` 3D globe video, parallax boarding-pass card, and bottom-docked Charter Booking drawer.
+## Live Demo
+
+- **Production URL:** https://tonkjet.netlify.app
+- **Repository:** https://github.com/BatuhanTNK/tonkjet
+
+## Highlights & Architecture
+
+- **Cinematic Preloader & Custom Favicon:** Radial `clip-path` reveal with priority preloading of core 4K WebP layers (`~1.4 MB` total) and bespoke SVG monogram favicon.
+- **4K Layered Cabin Window Zoom-Through:** Transparent oval cabin window (`3840×2160` RGBA WebP) zooming through the exact window center into an animated 4K sunlit cloud sea while the brand wordmark docks into the header.
+- **Dynamic Theme-Inverting Navigation:** Fixed header smoothly transitioning between light and dark palettes across sections with dual-layer vertical text-roll hover animations.
+- **4K Exterior → Interior CSS Mask Morph:** Pixel-aligned top-down Gulfstream 650ER exterior and open interior cabin (`3840×2160` WebP) revealed via feathered scroll-driven `mask-image`, glowing scan line, technical specification grid, and vector CAD dimension callouts.
+- **Interactive Advantages & Live Telemetry:** 4-item luxury editorial accordion with dynamic photo transitions and a live international time/telemetry strip.
+- **Interactive 4K Retina WebGL 3D Globe:** Real-time Three.js sphere rendered from bundled TopoJSON vector world data (`world-atlas`), custom Fresnel atmospheric rim shader, 14 animated 3D great-circle flight arcs, glowing hub beacons, and inertial drag-to-rotate controls paired with a parallax boarding-pass card and bottom-docked Charter Booking drawer.
+
+## Tech Stack
+
+`Next.js 14` · `TypeScript` · `Tailwind CSS` · `Framer Motion` · `Three.js` · `Lenis` · `TopoJSON` · `Netlify`
 
 ## Getting Started
 
